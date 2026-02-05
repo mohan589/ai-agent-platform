@@ -1,27 +1,24 @@
 # Enterprise AI Agent Platform (MCP-based)
 
-## Overview
-
 This project is a **production-grade AI Agent Platform** designed for enterprise workflows. It demonstrates how to safely deploy autonomous AI agents with tools, guardrails, auditability, and human-in-the-loop controls.
 
 Unlike demo chatbots, this system focuses on **reliability, security, and governance** — the hard problems companies actually care about.
 
 ---
 
-## What This Project Shows
+## 🧠 Philosophy & Core Ideas
 
-* How to design **AI-native backend systems**, not just prompts
-* Multi-agent orchestration using MCP-style tools
-* Secure OAuth-based access control for AI actions
-* Deterministic outputs with schema validation
-* Full audit trail of AI decisions
-* Clear separation between reasoning, tools, and execution
-
-This mirrors how modern enterprises are adopting AI internally.
+*   **Explicit > Implicit**: Clear boundaries between routing, reasoning, and execution.
+*   **Systems > Prompts**: AI is probabilistic; the surrounding system must be deterministic.
+*   **Agents are Products**: Each agent is domain-specific and self-contained, not just a function.
+*   **Auditability**: Every AI action must be traceable.
+*   **Human-in-the-Loop**: Human override is a feature, not a failure.
 
 ---
 
-## High-Level Architecture
+## 🏗 High-Level Architecture
+
+The system uses a **modular Agent Orchestrator** to route user intents to specialized agents.
 
 ```
 Client / CI / Internal Tools
@@ -29,220 +26,166 @@ Client / CI / Internal Tools
 FastAPI Gateway (Auth, RBAC)
         ↓
 Agent Orchestrator Service
-  ├─ Policy Engine
-  ├─ Prompt Registry (versioned)
-  ├─ Tool Router
+  ├─ Policy Engine (Guardrails)
+  ├─ Prompt Registry (Versioned)
+  ├─ Tool Router (Permissions)
   ├─ Eval & Validation Layer
         ↓
-MCP Agents
+MCP Agents (Domain Specific)
   ├─ API Test Generation Agent
   ├─ Security Review Agent
   ├─ Compliance & Audit Agent
         ↓
-Artifacts (Tests, Reports, Logs)
+Tools / Artifacts (Tests, Reports, Logs)
 ```
 
----
-
-## Core Components
-
-### 1. FastAPI Gateway
-
-**Responsibilities:**
-
-* OAuth / JWT authentication
-* Role-based access control (RBAC)
-* Request validation
-* Rate limiting
-
-This ensures agents never act outside authorized boundaries.
+### Request Flow
+1.  **Client** sends request (API/CI).
+2.  **Orchestrator** analyzes intent and checks policies.
+3.  **Router** selects the best agent (Test, Security, or Compliance).
+4.  **Agent** selects tools via the **Tool Router**.
+5.  **Tools** execute (with strict schema validation).
+6.  **Eval Layer** validates output (JSON schema, rule-based).
+7.  **Response** is returned with full audit trail.
 
 ---
 
-### 2. Agent Orchestrator
-
-The brain of the system.
-
-**Responsibilities:**
-
-* Selecting which agent(s) to run
-* Managing tool permissions per agent
-* Enforcing policies (what agents can/cannot do)
-* Retrying or escalating on failure
-
-Key idea: **Agents are powerful, but never autonomous without limits**.
-
----
-
-### 3. Prompt Registry
-
-* All prompts are versioned
-* Each execution records prompt hash + version
-* Enables reproducibility and audits
-
-This is critical for enterprise trust and debugging.
-
----
-
-### 4. Tool Router
-
-Agents do not call services directly.
-
-Instead:
-
-* Agents request a tool
-* Tool Router validates permission
-* Executes tool with strict schemas
-
-Prevents prompt injection and tool misuse.
-
----
-
-### 5. Evaluation & Validation Layer
-
-Before outputs are accepted:
-
-* JSON schema validation
-* Rule-based checks
-* Optional human approval
-
-No raw LLM output reaches production blindly.
-
----
-
-## Agents Included
-
-### API Test Generation Agent
-
-**Input:**
-
-* Swagger / OpenAPI spec
-* MongoDB schema
-
-**Output:**
-
-* Mocha + Chai test cases
-* Positive & negative scenarios
-* Faker-based mock data
-
-**Why it matters:** Replaces repetitive QA work while improving coverage.
-
----
-
-### Security Review Agent
-
-**Input:**
-
-* API specs
-* Auth configuration
-* Dependency metadata
-
-**Output:**
-
-* Auth flaws
-* Missing validations
-* Security risks
-* CVE references
-
-**Why it matters:** AI-assisted AppSec is becoming mandatory.
-
----
-
-### Compliance & Audit Agent
-
-**Input:**
-
-* Agent decisions
-* Tool calls
-* Logs
-
-**Output:**
-
-* Human-readable audit report
-* Decision rationale
-* Prompt & tool trace
-
-**Why it matters:** Regulators and enterprises demand explainability.
-
----
-
-## Repo Structure
+## 📂 Repo Structure
 
 ```
 ai-agent-platform/
-├─ api/
-│  ├─ main.py
-│  ├─ auth/
-│  ├─ routes/
-│  └─ middleware/
-├─ orchestrator/
-│  ├─ agent_manager.py
-│  ├─ policy_engine.py
-│  ├─ tool_router.py
-│  └─ eval_engine.py
-├─ agents/
-│  ├─ test_generator/
-│  ├─ security_reviewer/
-│  └─ compliance_agent/
-├─ tools/
-│  ├─ swagger_parser.py
-│  ├─ mongo_reader.py
-│  └─ repo_writer.py
-├─ prompts/
-│  ├─ v1/
-│  └─ v2/
-├─ storage/
-│  ├─ audit_logs/
-│  └─ outputs/
-└─ README.md
+│
+├── api/
+│   ├── main.py                 # FastAPI entrypoint
+│   ├── auth/                   # OAuth/JWT
+│   └── routes/                 # HTTP endpoints
+│
+├── orchestrator/               # Core Orchestrator Logic
+│   ├── orchestrator.py         # Agent selection + execution loop
+│   ├── policy_engine.py        # Guardrails & Permissions
+│   ├── tool_router.py          # Tool execution & validation
+│   ├── eval_engine.py          # Output verification
+│   └── audit_logger.py         # Audit trail
+│
+├── agents/                     # Specialized Agents
+│   ├── test_generator/         # Generates Mocha/Chai tests
+│   ├── security_reviewer/      # Analyzes specs for risks
+│   └── compliance_agent/       # Generates audit reports
+│
+├── tools/                      # Pluggable Tools
+│   ├── swagger_parser.py
+│   ├── mongo_reader.py
+│   └── repo_writer.py
+│
+├── prompts/                    # Versioned Prompt Registry
+├── schemas/                    # Pydantic Models for I/O
+└── storage/                    # Artifacts & Logs
 ```
 
 ---
 
-## Key Engineering Principles Demonstrated
+## 🤖 Agents Included
 
-* **AI is probabilistic → systems must be deterministic**
-* **Tools > raw text generation**
-* **Every AI action must be auditable**
-* **Human override is a feature, not a failure**
+### 1. API Test Generation Agent
+*   **Input**: Swagger/OpenAPI spec, MongoDB schema.
+*   **Output**: Mocha + Chai test cases, Faker-based mock data.
+*   **Role**: Automates repetitive QA work, ensures coverage.
+
+### 2. Security Review Agent
+*   **Input**: API specs, Auth config, Dependencies.
+*   **Output**: Report on auth flaws, missing validations, CVEs.
+*   **Role**: AI-assisted AppSec review.
+
+### 3. Compliance & Audit Agent
+*   **Input**: Agent decisions, logs, tool outputs.
+*   **Output**: Human-readable rationale and decision trace.
+*   **Role**: Provides explainability for regulators/auditors.
+
+---
+
+## 🚀 Capabilities & Tech Stack
+
+*   **API**: FastAPI
+*   **Models**: LLaMA / Ollama / OpenAI-compatible
+*   **Orchestration**: Custom Policy Engine + Tool Router
+*   **Tools**: MCP-style strict schemas
+*   **Auth**: OAuth2 / JWT (Planned)
 
 ---
 
-## Why This Matters for Hiring Managers
+## 🔜 Roadmap & Planned Upgrades
 
-This project demonstrates:
+All of the following upgrades are **planned and approved**:
 
-* Senior-level system design
-* Production AI safety thinking
-* Security-first architecture
-* Enterprise readiness
+### 1. Dynamic Agent Registry
+*   Auto-discover agents via metadata.
+*   Enable/disable agents via config.
+*   Versioned agents (v1, v2, experimental).
 
-It answers the question:
+### 2. Tool Auto-Selection
+*   Let agents choose tools dynamically with scoring.
+*   Detailed tool execution traces.
 
-> "Can this engineer be trusted to deploy AI in a real company?"
+### 3. Multi-Agent Workflows
+*   Chain multiple agents in a single request (e.g., Test Gen -> Security Review).
+*   Parallel agent execution (fan-out / fan-in).
+
+### 4. Memory & Context Management
+*   Short-term conversational memory.
+*   Vector-store backed context (FAISS/Pinecone) for long-running tasks.
+
+### 5. Streaming Responses
+*   Token-level streaming to client.
+*   SSE/WebSocket support for real-time feedback.
+
+### 6. Observability & Tracing (OpenTelemetry)
+*   Per-agent execution logs and cost metrics.
+*   Full trace from prompt to tool to result.
+
+### 7. Agent Configuration via YAML
+*   Define agent parameters and prompt templates without code changes.
 
 ---
+
+## Why This Matters
+
+This project demonstrates **senior-level system design** by answering the question:
+> "Can we trust this AI system in production?"
+
+It moves beyond simple chatbots to building **AI-native backend systems** that are reliable, secure, and ready for enterprise deployment.
 
 ## Who This Is For
 
-* AI Platform Engineers
-* Backend Engineers moving into AI
-* Security Engineers working with LLMs
-* Companies building internal AI tooling
+*   AI Platform Engineers
+*   Backend Engineers moving into AI
+*   Security Engineers working with LLMs
+*   Companies building internal AI tooling
 
 ---
 
-## Next Extensions
+## 🔄 Request Execution Flow
 
-* CI/CD integration
-* Cost & latency monitoring
-* Multi-model routing
-* Agent performance benchmarking
+```mermaid
+flowchart TD
+    Start([Start Request]) --> API[API Gateway]
+    API --> Auth{Authenticated?}
+    Auth -- No --> Stop403([Return 403])
+    Auth -- Yes --> Orch[Agent Orchestrator]
+    
+    Orch --> Policy{Pass Guardrails?}
+    Policy -- No --> StopPolicy([Block Request])
+    Policy -- Yes --> Router[Route to Agent]
+    
+    Router --> Tools{Select Tools}
+    Tools --> Exec[Execute Tool]
+    Exec --> Res[Get Tool Result]
+    
+    Res --> Eval{Pass Evaluation?}
+    Eval -- No --> Retry[Retry / Fix]
+    Retry --> Tools
+    Eval -- Yes --> Audit[Log Audit Trail]
+    
+    Audit --> End([Return Response])
+```
 
----
 
-## Final Note
-
-AI will not replace engineers who **design, control, and govern AI systems**.
-
-This project is about owning the system — not just calling a model.
