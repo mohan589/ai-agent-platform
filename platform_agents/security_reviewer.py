@@ -1,5 +1,6 @@
-from agents.base import BaseAgent
-from schemas.agent import AgentMetadata, AgentType
+from platform_agents.base import BaseAgent
+from schemas.agent_types import AgentType
+from schemas.agent import AgentMetadata
 
 class SecurityReviewerAgent(BaseAgent):
   @property
@@ -12,7 +13,7 @@ class SecurityReviewerAgent(BaseAgent):
     )
 
   def run(self, payload, tools, prompt):
-    tools.execute_tool(AgentType.SECURITY_REVIEWER, "auth_analysis", payload)
+    tools.execute_tool(AgentType.SECURITY_REVIEWER, "auth_analyzer", payload)
     tools.execute_tool(AgentType.SECURITY_REVIEWER, "cve_lookup", payload)
     return {
       "security_status": "safe", 

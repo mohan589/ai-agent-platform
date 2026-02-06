@@ -3,29 +3,9 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 import uuid
 
-class AgentType(str, Enum):
-  TEST_GENERATOR = "test_generator"
-  SECURITY_REVIEWER = "security_reviewer"
-  COMPLIANCE_AUDITOR = "compliance_auditor"
+from schemas.agent_types import AgentType
 
-class ExecutionStatus(str, Enum):
-  SUCCESS = "success"
-  FAILED = "failed"
-  NEEDS_HUMAN_REVIEW = "needs_human_review"
-
-@dataclass
-class AgentRequest:
-  agent_type: AgentType
-  payload: Dict[str, Any]
-  user_id: str
-  trace_id: str = str(uuid.uuid4())
-
-@dataclass
-class AgentResult:
-  status: ExecutionStatus
-  output: Optional[Dict[str, Any]]
-  errors: Optional[List[str]] = None
-  audit_id: Optional[str] = None
+from schemas.agent_request import AgentRequest, ExecutionStatus, AgentResult
 
 class PolicyEngine:
   """Defines what agents are allowed to do."""
@@ -38,7 +18,7 @@ class PolicyEngine:
   def allowed_tools(self, agent_type: AgentType) -> List[str]:
     policy_map = {
       AgentType.TEST_GENERATOR: ["swagger_parser", "mongo_reader", "repo_writer"],
-      AgentType.SECURITY_REVIEWER: ["dependency_scanner", "auth_analyzer"],
+      AgentType.SECURITY_REVIEWER: ["dependency_scanner", "auth_analyzer", "cve_lookup"],
       AgentType.COMPLIANCE_AUDITOR: ["log_reader"],
     }
     return policy_map.get(agent_type, [])

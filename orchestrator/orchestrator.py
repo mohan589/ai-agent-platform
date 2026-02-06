@@ -1,9 +1,10 @@
 from orchestrator.registry import AgentRegistry
-from policy_engine import PolicyEngine
-from tool_router import ToolRouter
-from prompt_registry import PromptRegistry
-from eval_engine import EvalEngine
-from audit_logger import AuditLogger
+from orchestrator.policy_engine import PolicyEngine
+from orchestrator.tool_router import ToolRouter
+from orchestrator.prompt_registry import PromptRegistry
+from orchestrator.eval_engine import EvalEngine
+from orchestrator.audit_logger import AuditLogger
+from orchestrator.workflow_engine import WorkflowEngine
 
 class AgentOrchestrator:
   def __init__(self):
@@ -13,6 +14,10 @@ class AgentOrchestrator:
     self.eval = EvalEngine()
     self.audit = AuditLogger()
     self.registry = AgentRegistry()
+    self.workflow_engine = WorkflowEngine(self.registry, self.tools, self.prompts)
+
+  def run_workflow(self, workflow_def, initial_payload):
+    return self.workflow_engine.run_workflow(workflow_def, initial_payload)
 
   def execute(self, request):
     try:

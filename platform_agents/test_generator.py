@@ -1,5 +1,5 @@
-from agents.base import BaseAgent
-from schemas.agent_request import AgentType
+from platform_agents.base import BaseAgent
+from schemas.agent_types import AgentType
 from schemas.agent import AgentMetadata
 
 class TestGeneratorAgent(BaseAgent):

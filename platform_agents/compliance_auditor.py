@@ -1,5 +1,6 @@
-from agents.base import BaseAgent
-from schemas.agent import AgentMetadata, AgentType
+from platform_agents.base import BaseAgent
+from schemas.agent_types import AgentType
+from schemas.agent import AgentMetadata
 
 class ComplianceAuditorAgent(BaseAgent):
   @property

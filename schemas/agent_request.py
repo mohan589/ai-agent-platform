@@ -3,10 +3,7 @@ from dataclasses import dataclass
 from typing import Dict, Any, Optional, List
 import uuid
 
-class AgentType(str, Enum):
-  TEST_GENERATOR = "test_generator"
-  SECURITY_REVIEWER = "security_reviewer"
-  COMPLIANCE_AUDITOR = "compliance_auditor"
+from schemas.agent_types import AgentType
 
 class ExecutionStatus(str, Enum):
   SUCCESS = "success"
